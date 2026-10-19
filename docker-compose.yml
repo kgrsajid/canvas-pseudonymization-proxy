@@ -1,0 +1,14 @@
+services:
+  proxy:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8000"   # terminate TLS in front (nginx/ingress with mTLS)
+    env_file: .env
+    volumes:
+      - ./data:/srv/data         # SQLite vault (dev). Production: use Postgres.
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/proxy/v1/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
